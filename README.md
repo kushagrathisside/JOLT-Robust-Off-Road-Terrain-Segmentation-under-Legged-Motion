@@ -1,116 +1,79 @@
-# Fine-Tuning DINOv2 for Terrain Understanding using RUGD
+# JOLT — Robust Off-Road Terrain Segmentation under Legged Motion
 
-## Overview
+A **parameterized motion-degradation robustness benchmark** for off-road terrain
+segmentation — motion blur, rolling shutter, and viewpoint jitter induced by legged
+ego-motion — plus a gated robustness method. We deliberately do **not** chase clean
+mIoU; we measure **retention** under corruption, where coarse-label noise largely
+cancels.
 
-This project focuses on adapting a self-supervised Vision Transformer (DINOv2) for terrain understanding in unstructured outdoor environments using the RUGD dataset.
+> **Why robustness, not accuracy?** Off-road labels (RUGD) are coarse, so clean mIoU
+> penalizes models that are more spatially faithful than the ground truth, and
+> foundation models (DINOv2/SAM2) are near-ceiling on clean accuracy. Robustness is a
+> *relative* quantity (model vs. itself, clean→corrupted), so it is fair even with
+> noisy GT. See [`terrain-perception-RESEARCH.md`](terrain-perception-RESEARCH.md)
+> for the full plan and [`docs/literature-justification.tex`](docs/literature-justification.tex)
+> for positioning vs. prior work.
 
-While DINOv2 provides strong general-purpose visual representations, real-world robotics applications require domain adaptation to:
+## Status
 
-- Terrain-specific textures  
-- Traversability patterns  
-- Natural environmental variability  
+| Component | State |
+|---|---|
+| **Gate (§4)** — go/no-go diagnostic | ✅ implemented, `jolt/scripts/gate.py` |
+| Corruptions, metrics, RUGD loaders, DINOv2 model, smoke test | ✅ implemented + tested |
+| `benchmark.py` (full sweep), `crossdataset.py` (§7), `baselines.py`, SAM2 wrapper body | ⏳ not yet implemented |
 
-This work fine-tunes DINOv2 to improve feature sensitivity toward ground-level semantic distinctions relevant to robotics and navigation systems.
-<img width="1218" height="407" alt="rugd" src="https://github.com/user-attachments/assets/e711ebbe-2fae-49c1-b272-d37c847b184e" />
+**The gate is the deciding experiment — run it before building anything downstream.**
+If legged-motion corruption clearly degrades SOTA terrain segmentation, build the
+benchmark + method; if not, pivot to a cross-dataset generalization study.
 
----
+## Repository layout
 
-## Objective
+```
+jolt/
+  corruptions/   motion_blur · rolling_shutter · jitter · geometry · severity · compose
+  data/          rugd.py  (RUGDFrames = full-frame benchmark unit; RUGDRaw = patches for training)
+  metrics/       miou (streaming confusion matrix) · retention (R, mCR) · boundary_f
+  models/        dinov2_head (subject) · sam2_wrapper (ceiling ablation, stub)
+  scripts/       gate.py  ·  smoke_test.py
+  README.md      package-level docs + methodological caveats
+configs/         corruption_severities.yaml
+docs/            literature-justification.tex  ·  running-on-gpu.md
+data/            datasets live here (git-ignored; see data/README.md)
+legacy/          original exploratory DINOv2/RUGD fine-tuning notebooks
+```
 
-To bridge the gap between:
+## Quickstart
 
-**Foundation Vision Models**  
-and  
-**Terrain-aware perception for real-world deployment**
+```bash
+pip install -e .          # or: pip install -r requirements.txt
 
-By adapting DINOv2 embeddings for:
+# 1. Offline plumbing check (no GPU / no weights needed):
+python -m jolt.scripts.smoke_test \
+    --images-dir data/rugd_sample/RUGD_sample-data/images \
+    --annotations-dir data/rugd_sample/RUGD_sample-data/annotations
 
-- Outdoor ground scene understanding  
-- Unstructured terrain classification  
-- Robust visual representation learning  
+# 2. The gate (needs DINOv2 weights; GPU recommended):
+python -m jolt.scripts.gate \
+    --images-dir data/RUGD/images --annotations-dir data/RUGD/annotations \
+    --split val --model dinov2 --checkpoint best_model.pth --seeds 3 --limit 300
+```
 
----
+Full GPU run commands (RTX 4060 / 8 GB settings, SAM2 ablation, monitoring):
+**[`docs/running-on-gpu.md`](docs/running-on-gpu.md)**.
 
-## Dataset
+## The metric
 
-**RUGD (Robot Unstructured Ground Driving Dataset)**
+- `m0` — clean mIoU (reference only).
+- `R(c,s) = m(c,s) / m0` ∈ [0,1] — **retention**, the headline robustness metric.
+- `mCR` — mean retention over corruptions × severities.
+- Boundary-F retention reported alongside (boundaries degrade first under blur).
 
-Used for:
+Corruptions are synthesized on the **full-resolution frame** (global ego-motion is a
+full-sensor effect), then resized to a ÷14 inference size for the model. The gate
+reports mean ± std over multiple corruption seeds; **frames** (not crops) are the
+i.i.d. aggregation unit. See [`jolt/README.md`](jolt/README.md) for the methodological
+caveats (retention cancels label noise only approximately; report photometric vs.
+geometric retention separately; severity values are not yet IMU-calibrated).
 
-- Ground-level scene diversity  
-- Natural terrain variability  
-- Robotics-relevant visual semantics  
-
-Includes terrain categories such as:
-
-- Dirt  
-- Grass  
-- Gravel  
-- Asphalt  
-- Vegetation  
-- Obstacles  
-
-This enables learning of representations aligned with real-world navigation contexts.
-
----
-
-## Methodology
-
-### 1. Feature Extraction
-- Leveraged pretrained DINOv2 Vision Transformer backbone
-- Extracted patch-level embeddings from terrain images
-
-### 2. Fine-Tuning Strategy
-- Adapted representation layers to RUGD-specific terrain patterns
-- Improved discriminability across terrain classes
-- Preserved foundational visual generalization
-
-### 3. Supervised Adaptation
-- Trained classification head on extracted features
-- Optimized model for terrain-aware semantic separation
-
-### 4. Evaluation
-- Assessed class-level performance
-- Observed improved contextual sensitivity to ground textures
-
----
-
-## Key Contributions
-
-- Adapted a foundation vision model for robotics terrain perception
-- Enabled domain-specific representation learning without full model retraining
-- Demonstrated applicability of self-supervised models in real-world robotic sensing tasks
-
----
-
-## Applications
-
-This approach supports:
-
-- Vision-based navigation  
-- Autonomous mobility  
-- Terrain classification systems  
-- Cross-domain robustness studies  
-
-Especially relevant for:
-
-- Robotics  
-- Autonomous systems  
-- Field AI deployments  
-
----
-
-## Tech Stack
-
-- DINOv2
-- PyTorch
-- Vision Transformers
-- RUGD Dataset
-
----
-
-## Future Work
-
-- Integration with mobility or navigation pipelines
-- Robustness testing across varied environmental conditions
-- Transferability analysis to unseen terrains
+## License
+MIT — see [`LICENSE`](LICENSE).

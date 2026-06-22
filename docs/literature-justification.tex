@@ -1,0 +1,176 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=black}
+
+\title{JOLT: Literature Justification for a Legged-Motion\\
+Robustness Benchmark in Off-Road Terrain Segmentation}
+\author{Terrain-Perception thread (thesis)}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This document answers one question before any downstream code is written:
+\emph{is there sufficient literature to justify the use case behind JOLT?} The
+verdict is \textbf{yes for justification, with an important caveat for novelty}.
+The corruption-robustness methodology is well established and directly transferable,
+and the off-road/legged specialization is genuinely under-served --- but several
+adjacent ideas (corruption-robustness \emph{for segmentation}, motion-blur-robust
+segmentation, IMU-conditioned deblurring) are \emph{already owned} in the on-road /
+image-restoration literature. The defensible contribution is therefore a
+\emph{domain-and-metric specialization}, not a methodological first. We document
+the precedents, the genuine whitespace, the threats to novelty, and the evidence
+that makes the empirical gate (\S\ref{sec:gate}) the deciding experiment.
+\end{abstract}
+
+\section{The claim under test}
+JOLT rests on one empirical and one positioning claim:
+\begin{enumerate}[noitemsep]
+  \item \textbf{Empirical:} legged-motion corruption (motion blur, rolling shutter,
+        viewpoint jitter) materially degrades SOTA terrain segmentation. \emph{(Settled
+        by the gate, not by literature --- \S\ref{sec:gate}.)}
+  \item \textbf{Positioning:} no existing benchmark or method \emph{owns} this for
+        off-road / legged terrain. \emph{(Assessed here.)}
+\end{enumerate}
+
+\section{Precedent: the methodology is established (this is a strength)}
+\label{sec:precedent}
+The relative-robustness framing is mature and transferable, which de-risks the method:
+\begin{itemize}[noitemsep]
+  \item \textbf{ImageNet-C} \cite{imagenetc} introduced parameterized corruptions at
+        graded severities and the \emph{relative} robustness metric. This is the exact
+        template JOLT's retention $R = m(c,s)/m_0$ follows, and the reason coarse
+        ground truth cancels.
+  \item \textbf{Robustness of semantic segmentation to common corruptions}
+        \cite{kamann} is the direct segmentation analogue (Cityscapes / PASCAL VOC /
+        ADE20K), and it \emph{already includes motion blur}. This both validates the
+        approach and is the strongest novelty threat (\S\ref{sec:threats}).
+  \item \textbf{Motion-blur-robust segmentation via class-centric augmentation}
+        \cite{classcentric} (CVPR 2023) shows motion-blur robustness for segmentation
+        is itself an active, partly-owned topic --- but on-road.
+  \item \textbf{LiDAR segmentation robustness benchmarks} \cite{robo3d} and the
+        \textbf{ACDC} adverse-condition driving benchmark \cite{acdc} extend the
+        robustness-benchmark idea to other modalities / real conditions --- again,
+        \emph{urban/driving}, not off-road and not gait-matched.
+\end{itemize}
+
+\section{The genuine whitespace (this is the contribution)}
+\label{sec:whitespace}
+Cross-referencing the corruption-robustness literature (\S\ref{sec:precedent}, all
+urban/driving) against the off-road perception literature (which exists but is
+accuracy- or generalization-focused, not corruption-focused) leaves a clear gap:
+\begin{itemize}[noitemsep]
+  \item \textbf{No corruption-robustness benchmark targets off-road / unstructured
+        terrain.} Off-road work \cite{offseg,ganav,crossdataset} optimizes clean
+        accuracy or cross-dataset generalization; robustness benchmarks
+        \cite{kamann,acdc,robo3d} target cities/roads. The intersection is empty.
+  \item \textbf{No benchmark ties corruption severity to legged gait.} Existing
+        severity ladders are generic; none are calibrated to gait frequency
+        $\times$ exposure or to legged ego-motion statistics.
+  \item \textbf{The noisy-GT argument is independently supported.} Off-road labels
+        are documented as coarse/ambiguous (e.g. coarse-label off-road work
+        \cite{coarse}), which is precisely why an accuracy target is weak and a
+        \emph{retention} target (where label noise cancels) is the right reframe.
+  \item \textbf{Legged ground-level perception is rising but corruption-blind.}
+        Recent legged datasets/benchmarks \cite{grandtour,oneocc,robosense} establish
+        the platform's importance yet none stress-test segmentation under synthesized
+        legged-motion corruption.
+\end{itemize}
+\noindent\textbf{Net:} the defensible novelty is the \emph{off-road $\times$
+legged-gait-matched $\times$ retention-metric} specialization, plus releasing the
+parameterized transforms as a reusable benchmark.
+
+\section{Threats to novelty --- read before committing}
+\label{sec:threats}
+The literature also \emph{narrows} the claim. The JOLT doc's phrase ``no benchmark or
+method owns it'' is too strong as written; the precise, defensible version is ``no
+benchmark owns it \emph{for off-road / legged terrain}.'' Specifically:
+\begin{itemize}[noitemsep]
+  \item Do \textbf{not} claim the first corruption-robustness benchmark for
+        segmentation --- \cite{kamann} owns it.
+  \item Do \textbf{not} claim the first motion-blur-robust segmentation ---
+        \cite{classcentric} owns it (on-road).
+  \item Do \textbf{not} claim the first IMU/proprioception-conditioned deblurring ---
+        gyroscope- and IMU-aided deblurring already exist \cite{gyrodeblur,imumesh},
+        and explicitly mention legged robots. The novelty would be \emph{coupling it
+        to terrain segmentation robustness}, not the deblurring idea itself.
+\end{itemize}
+Mitigation: frame as a \emph{domain benchmark + targeted method}, lead with the
+gait-matched calibration and the off-road retention story, and (decisively) show that
+even the foundation-model ceiling degrades.
+
+\section{Why the gate is still the deciding experiment}
+\label{sec:gate}
+Literature can justify the \emph{framing} but cannot settle the \emph{empirical}
+claim: foundation models (DINOv2, SAM2) trained at scale may already be robust to
+these corruptions, in which case the benchmark has no signal and the thread should
+pivot to cross-dataset generalization. Two outcomes maximize the contribution and are
+exactly what the gate measures:
+\begin{enumerate}[noitemsep]
+  \item a \textbf{large, monotone} retention drop with severity, and
+  \item the drop persisting for \textbf{SAM2 (the ceiling)}, not just the small
+        frozen-DINOv2 head --- which rules out ``it's just a weak head.''
+\end{enumerate}
+The gate harness (\texttt{jolt/scripts/gate.py}) computes retention and boundary-F
+retention per corruption $\times$ severity and prints an advisory verdict.
+
+\section{Verdict}
+\textbf{Sufficient literature to justify the use case: yes.} The methodology is
+proven and transferable; the off-road/legged specialization is a real, unoccupied
+niche; and the noisy-label premise is independently supported. \textbf{But} the
+novelty must be scoped as a domain-and-metric specialization, because the generic
+versions of the benchmark and the candidate method are already published. Venue
+implication: this supports a Datasets-\&-Benchmarks / robotics-venue submission
+strongly, and a CV main-track submission only if the gate passes \emph{and} a
+targeted method beats baselines on retention across multiple off-road datasets.
+
+\begin{thebibliography}{99}
+\bibitem{imagenetc} D. Hendrycks and T. Dietterich.
+  \emph{Benchmarking Neural Network Robustness to Common Corruptions and Perturbations.}
+  ICLR 2019. \url{https://arxiv.org/abs/1903.12261}
+\bibitem{kamann} C. Kamann and C. Rother.
+  \emph{Benchmarking the Robustness of Semantic Segmentation Models with Respect to
+  Common Corruptions.} IJCV 2020.
+  \url{https://link.springer.com/article/10.1007/s11263-020-01383-2}
+\bibitem{classcentric} \emph{Improving Robustness of Semantic Segmentation to
+  Motion-Blur Using Class-Centric Augmentation.} CVPR 2023.
+  \url{https://cvpr.thecvf.com/virtual/2023/poster/21045}
+\bibitem{robo3d} L. Kong et al. \emph{Benchmarking the Robustness of LiDAR Semantic
+  Segmentation Models (Robo3D).} \url{https://arxiv.org/pdf/2301.00970}
+\bibitem{acdc} C. Sakaridis et al. \emph{ACDC: The Adverse Conditions Dataset with
+  Correspondences for Semantic Driving Scene Understanding.} ICCV 2021.
+  \url{https://acdc.vision.ee.ethz.ch/}
+\bibitem{gyrodeblur} \emph{Gyroscope-Assisted Motion Deblurring Network.} 2024.
+  \url{https://arxiv.org/abs/2402.06854}
+\bibitem{imumesh} \emph{IMU-aided Adaptive Mesh-Grid Based Video Motion Deblurring.}
+  PeerJ CS, 2024. \url{https://peerj.com/articles/cs-2540/}
+\bibitem{coarse} \emph{COARSE: Collaborative Pseudo-Labeling with Coarse Real Labels
+  for Off-Road Semantic Segmentation.} 2025. \url{https://arxiv.org/html/2503.03947v1}
+\bibitem{crossdataset} \emph{Cross-Dataset Evaluation of Visual Semantic Segmentation
+  Models for Off-Road Autonomous Driving.} 2026.
+  \url{https://www.sciencedirect.com/science/article/pii/S0957417426015691}
+\bibitem{offseg} K. Viswanath et al. \emph{OFFSEG: A Semantic Segmentation Framework
+  for Off-Road Driving.} \url{https://arxiv.org/pdf/2103.12417}
+\bibitem{ganav} A. J. Guan et al. \emph{GA-Nav: Efficient Terrain Segmentation for
+  Off-Road Navigation.} \url{https://arxiv.org/pdf/2103.04233}
+\bibitem{grandtour} \emph{GrandTour: A Legged Robotics Dataset in the Wild for
+  Multi-Modal Perception and State Estimation.} 2026.
+  \url{https://arxiv.org/pdf/2602.18164}
+\bibitem{oneocc} \emph{OneOcc: Semantic Occupancy Prediction for Legged Robots with a
+  Single Panoramic Camera.} 2025. \url{https://arxiv.org/pdf/2511.03571}
+\bibitem{robosense} \emph{RoboSense: Large-scale Dataset and Benchmark for Egocentric
+  Robot Perception and Navigation in Crowded and Unstructured Environments.} 2024.
+  \url{https://arxiv.org/abs/2408.15503}
+\bibitem{rugd} N. Wigness et al. \emph{A RUGD Dataset for Autonomous Navigation and
+  Visual Perception in Unstructured Outdoor Environments.} IROS 2019.
+\bibitem{rellis} P. Jiang et al. \emph{RELLIS-3D Dataset.}
+  \url{https://arxiv.org/abs/2011.12954}
+\bibitem{goose} \emph{GOOSE Dataset.} \url{https://goose-dataset.de/}
+\bibitem{dinov2} M. Oquab et al. \emph{DINOv2.} \url{https://arxiv.org/abs/2304.07193}
+\end{thebibliography}
+\end{document}

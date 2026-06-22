@@ -1,0 +1,33 @@
+# JOLT .gitignore
+# NOTE: data/runs patterns are ROOT-ANCHORED (leading /). An unanchored "data/"
+# would also ignore the jolt/data/ source package — do not remove the slash.
+
+# Datasets: keep the top-level data/ folder, but never commit data into it.
+/data/*
+!/data/README.md
+
+# Run outputs (results, plots, checkpoints)
+/runs/
+*.pth
+*.pt
+*.ckpt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# LaTeX build artifacts (the .tex is the source of truth; PDF is generated)
+*.aux
+*.log
+*.out
+/docs/*.pdf
+
+# Repro lockfiles are intentionally NOT ignored (commit requirements.lock).

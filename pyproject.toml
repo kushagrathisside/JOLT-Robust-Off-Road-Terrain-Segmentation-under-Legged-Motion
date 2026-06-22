@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jolt"
+version = "0.1.0"
+description = "JOLT — legged-motion robustness benchmark for off-road terrain segmentation"
+authors = [{ name = "Kushagra Srivastava" }]
+license = { file = "LICENSE" }
+readme = "jolt/README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0,<3",
+    "torchvision>=0.15",
+    "timm>=0.9",
+    "opencv-python>=4.7",
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "pyyaml>=6.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["jolt*"]
