@@ -11,7 +11,7 @@ are planned, not implemented.
 > penalizes models that are more spatially faithful than the ground truth, and
 > foundation models (DINOv2/SAM2) are near-ceiling on clean accuracy. Robustness is a
 > *relative* quantity (model vs. itself, clean→corrupted), so it is fair even with
-> noisy GT. See [`terrain-perception-RESEARCH.md`](terrain-perception-RESEARCH.md)
+> noisy GT. See [`docs/RESEARCH.md`](docs/RESEARCH.md)
 > for the full plan and [`docs/literature-justification.tex`](docs/literature-justification.tex)
 > for positioning vs. prior work.
 

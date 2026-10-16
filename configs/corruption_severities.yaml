@@ -1,5 +1,5 @@
 # JOLT corruption severity ladders (mirrors jolt/corruptions/severity.py).
-# Plausible starting values per RESEARCH.md §5.1 — calibrate to real legged
+# Plausible starting values per docs/RESEARCH.md §5.1 — calibrate to real legged
 # IMU/gait data when available (kernel length ~ angular velocity x exposure).
 motion_blur:
   param: kernel_length_px

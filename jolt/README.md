@@ -4,7 +4,7 @@ A parameterized motion-degradation robustness benchmark (motion blur, rolling
 shutter, viewpoint jitter) for outdoor scene segmentation, plus a gated
 robustness method. We measure **retention** under corruption, not clean mIoU.
 The current code evaluates on RUGD, an off-road dataset.
-See [`../terrain-perception-RESEARCH.md`](../terrain-perception-RESEARCH.md) for
+See [`../docs/RESEARCH.md`](../docs/RESEARCH.md) for
 the full plan and [`../docs/literature-justification.tex`](../docs/literature-justification.tex)
 for positioning.
 
