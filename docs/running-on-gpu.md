@@ -8,7 +8,8 @@ Concrete commands for running the gate on a local NVIDIA GPU. Tuned for an
 ## 0. Setup
 
 ```bash
-git clone <repo> && cd Image-Segmentation-Using-ViT-Finetuning
+git clone https://github.com/kushagrathisside/JOLT-Robust-Off-Road-Terrain-Segmentation-under-Legged-Motion.git
+cd JOLT-Robust-Off-Road-Terrain-Segmentation-under-Legged-Motion
 python -m venv .venv && source .venv/bin/activate
 pip install -e .
 
@@ -27,10 +28,44 @@ pip freeze > requirements.lock
 ```bash
 # RUGD full frames + color annotations -> data/RUGD/ (see data/README.md)
 #   data/RUGD/images/*.png   data/RUGD/annotations/*.png
-# DINOv2 head checkpoint from your training run -> best_model.pth
+# DINOv2 head checkpoint -> best_model.pth (see "Head checkpoint" below)
 ```
 
-## 2. Sanity check (fast, CPU is fine)
+### Head checkpoint (`best_model.pth`)
+
+The repository has **no head-training script**, and the checkpoint is not in git (`*.pth`
+is ignored). The only head-training code is the legacy Colab notebook
+`legacy/DinoV2_FineTuning_RUGD.ipynb`, which lives on the **`legacy-notebooks`** branch.
+Nothing here has been run to produce a checkpoint.
+
+**Inputs.** The notebook reads `rugd_224_patches.zip` from Google Drive. The
+`RUGD_dataset_augmentation.ipynb` notebook (also on `legacy-notebooks`) makes that zip
+by cutting the RUGD frames into 224×224 patches.
+
+**Training settings** (training loop, notebook cell "4. Training Loop"; cell index 3):
+
+- Backbone: `dinov2_vits14` from torch hub, frozen.
+- Head: Conv 3×3 384→256, BatchNorm, ReLU, Conv 1×1 256→25 (`NUM_CLASSES = 25`).
+- Optimizer: AdamW, lr 3e-4, on the head parameters only.
+- Loss: cross-entropy. Batch size 64, 15 epochs.
+- Saving: `torch.save(model.state_dict(), "best_model.pth")` when the validation metric
+  improves.
+
+To reproduce, run the notebook's cells 0–3 in Colab with the patch zip on Drive. Then
+copy `best_model.pth` to the repository root, or pass its path with `--checkpoint`.
+
+**Caveats (not yet measured):**
+
+- The head is trained on **224×224 patches**, but the gate infers on **full 448×560
+  frames**. The effect of that scale change is unknown.
+- The notebook's validation mIoU is averaged per batch and includes the void class. The
+  gate's metric is dataset-level and ignores void. The two numbers are not comparable.
+- The saved `state_dict` has `backbone.*` and `head.*` keys. `jolt/models/dinov2_head.py`
+  refuses a checkpoint that does not populate the head.
+- The notebook's other saves (`best_model_finetuned.pth`, `best_model_base_finetuned.pth`)
+  come from unfrozen or ViT-Base runs. They are not the documented head.
+
+## 2. Sanity check (CPU is fine; needs torch and the RUGD sample)
 
 ```bash
 python -m jolt.scripts.smoke_test \
