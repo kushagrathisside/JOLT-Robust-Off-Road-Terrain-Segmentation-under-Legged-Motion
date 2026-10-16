@@ -1,4 +1,4 @@
-"""SAM2 baseline (JOLT §5.3 — the ceiling).
+"""SAM2 baseline (RESEARCH §5.3 — the ceiling).
 
 SAM2 is the strongest zero-shot mask model; if even SAM2 degrades under
 legged-motion corruption, the gate's case is strongest. SAM2 is not pip-installable

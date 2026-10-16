@@ -1,4 +1,4 @@
-"""RUGD loaders (JOLT §5.4).
+"""RUGD loaders (RESEARCH §5.4).
 
 Two loaders, both yielding RAW uint8 RGB + integer class mask so corruptions are
 applied to raw pixels *before* ImageNet normalization (a corruption models a
@@ -11,7 +11,7 @@ sensor/physics effect and must precede the model's input transform):
     native frame, and the gate must aggregate per-frame (frames are the i.i.d.
     unit, not random crops of them).
   * ``RUGDRaw`` — the pre-generated 224x224 patches. Kept for *training* the head
-    (C2), NOT for the corruption benchmark (corrupting a crop mis-scales the
+    NOT for the corruption benchmark (corrupting a crop mis-scales the
     sensor geometry).
 
 Use ``imagenet_normalize`` to turn a (possibly corrupted) uint8 image into the

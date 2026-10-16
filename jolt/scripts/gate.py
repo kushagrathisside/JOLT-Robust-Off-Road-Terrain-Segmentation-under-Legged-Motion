@@ -1,4 +1,4 @@
-"""JOLT §4 — THE GATE. Run this first; build nothing downstream until it passes.
+"""RESEARCH §4 — THE GATE. Run this first; build nothing downstream until it passes.
 
 Empirical question: does legged-motion corruption actually degrade SOTA terrain
 segmentation? We evaluate a model on clean vs. each corruption x severity over the
@@ -19,7 +19,7 @@ are the i.i.d. aggregation unit.
     # ceiling ABLATION (optional, heavier): --model sam2
 
 Decision (advisory, printed at the end):
-    large, monotone drop in retention -> real problem -> build C1 + C2  (PASS)
+    large, monotone drop in retention -> real problem -> build the benchmark and method  (PASS)
     small / flat drop                 -> SOTA already robust -> pivot (§7) (FAIL)
 """
 import argparse
@@ -169,7 +169,7 @@ def _retention_grid(results):
 
 
 def _verdict(results):
-    """Advisory go/no-go (JOLT §4), informed by the across-seed spread."""
+    """Advisory go/no-go (RESEARCH §4), informed by the across-seed spread."""
     grid = _retention_grid(results)
     severities = sorted({s for r in grid.values() for s in r})
     if not severities:
@@ -188,7 +188,7 @@ def _verdict(results):
              "Thresholds below are heuristics, not significance tests — read the "
              "per-corruption curves and the across-seed std before committing."]
     if mean_at_max <= 0.85 and monotone:
-        return "PASS — large, monotone drop -> build C1 + C2", notes
+        return "PASS — large, monotone drop -> build the benchmark and method", notes
     if mean_at_max <= 0.92:
         return "BORDERLINE — moderate drop; inspect curves/seeds before committing", notes
     return "FAIL — small/flat drop -> SOTA already robust -> pivot to cross-dataset (§7)", notes
@@ -258,7 +258,7 @@ def _parse_size(text):
 
 
 def parse_args(argv=None):
-    p = argparse.ArgumentParser(description="JOLT §4 gate diagnostic (full-frame RUGD)")
+    p = argparse.ArgumentParser(description="RESEARCH §4 gate diagnostic (full-frame RUGD)")
     p.add_argument("--images-dir", required=True, help="RUGD frames dir (flat or nested by sequence)")
     p.add_argument("--annotations-dir", required=True, help="RUGD color-annotation dir")
     p.add_argument("--split", default="val", choices=list(RUGD_SPLITS))

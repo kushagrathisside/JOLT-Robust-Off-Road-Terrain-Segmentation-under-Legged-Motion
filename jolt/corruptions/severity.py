@@ -1,4 +1,4 @@
-"""Severity ladders for the gait-matched motion-degradation corruptions (JOLT §5.1).
+"""Severity ladders for the gait-matched motion-degradation corruptions (RESEARCH §5.1).
 
 Severities run 1..5 (ImageNet-C style). The numbers below are the *plausible
 starting values* from the research doc; they are meant to be calibrated against

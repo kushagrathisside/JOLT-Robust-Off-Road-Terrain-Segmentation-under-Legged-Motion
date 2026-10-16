@@ -1,4 +1,4 @@
-"""Retention metric (JOLT §5.2) — *the* robustness number.
+"""Retention metric (RESEARCH §5.2) — *the* robustness number.
 
 R(c,s) = m(c,s) / m0 in [0,1], where m0 is clean mIoU and m(c,s) is mIoU under
 corruption c at severity s. Because R is a ratio of the same model against itself,

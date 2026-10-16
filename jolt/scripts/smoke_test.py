@@ -47,7 +47,7 @@ def main(argv=None):
                       compose.make_rng(0, 0, "motion_blur", 5))[1], mask0), \
         "motion_blur (photometric) must leave the mask unchanged"
 
-    # 2. RNG determinism (B1): same (seed,idx,corruption,severity) -> identical output.
+    # 2. RNG determinism: same (seed,idx,corruption,severity) -> identical output.
     a_i, a_m = compose.apply("legged", img0.copy(), mask0.copy(), 4, compose.make_rng(7, 3, "legged", 4))
     b_i, b_m = compose.apply("legged", img0.copy(), mask0.copy(), 4, compose.make_rng(7, 3, "legged", 4))
     assert np.array_equal(a_i, b_i) and np.array_equal(a_m, b_m), "make_rng is not deterministic!"

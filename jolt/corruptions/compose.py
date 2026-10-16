@@ -1,4 +1,4 @@
-"""Corruption registry + the 'legged' composite (JOLT §5.1).
+"""Corruption registry + the 'legged' composite (RESEARCH §5.1).
 
 Every corruption shares the signature ``f(image, mask, severity, rng) -> (image, mask)``
 so the gate/benchmark can iterate over them uniformly. Geometric corruptions warp
@@ -61,7 +61,7 @@ def _stable_int(text: str) -> int:
 
 def make_rng(seed, image_index, corruption_name, severity):
     """Deterministic per-(seed, image, corruption, severity) RNG, reproducible
-    across processes (JOLT §5.5)."""
+    across processes (RESEARCH §5.5)."""
     seq = np.random.SeedSequence([int(seed), int(image_index),
                                   _stable_int(corruption_name), int(severity)])
     return np.random.default_rng(seq)

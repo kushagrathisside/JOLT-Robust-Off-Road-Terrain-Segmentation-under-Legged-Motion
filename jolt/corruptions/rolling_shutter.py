@@ -1,4 +1,4 @@
-"""Rolling-shutter warp (JOLT §5.1).
+"""Rolling-shutter warp (RESEARCH §5.1).
 
 A CMOS sensor reads rows sequentially: row r is exposed at time t + r*readout/H.
 Under horizontal ego-motion this shears the image row-by-row. We model it as a

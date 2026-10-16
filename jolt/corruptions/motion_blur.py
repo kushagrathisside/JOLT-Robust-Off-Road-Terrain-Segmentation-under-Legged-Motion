@@ -1,4 +1,4 @@
-"""Directional linear motion blur (JOLT §5.1).
+"""Directional linear motion blur (RESEARCH §5.1).
 
 Models the exposure smear from body oscillation under a gait: a straight-line
 kernel of length L at a random orientation per image. L grows with severity

@@ -1,4 +1,4 @@
-"""Boundary-F1 (JOLT §5.2).
+"""Boundary-F1 (RESEARCH §5.2).
 
 Boundaries degrade first under motion blur, so we report a boundary score
 alongside mIoU. This is the class-agnostic contour F-measure (Csurka et al.):

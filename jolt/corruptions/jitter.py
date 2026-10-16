@@ -1,4 +1,4 @@
-"""Viewpoint jitter (JOLT §5.1).
+"""Viewpoint jitter (RESEARCH §5.1).
 
 Small per-frame camera rotations (pitch/roll/yaw) from legged body sway, applied
 as the induced homography under a pinhole model. Intrinsics are derived from the

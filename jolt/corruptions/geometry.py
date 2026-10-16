@@ -1,4 +1,4 @@
-"""Coordinate-map utilities for the geometric corruptions (JOLT §5.1).
+"""Coordinate-map utilities for the geometric corruptions (RESEARCH §5.1).
 
 A geometric corruption is represented as a backward sampling map
 ``(map_x, map_y)``: the corrupted output at pixel ``(x, y)`` reads the source
@@ -6,7 +6,7 @@ image at ``(map_x[y,x], map_y[y,x])``. Representing warps this way lets us
 
   * resample the RGB image (bilinear) and the label mask (nearest) consistently, and
   * **compose** several geometric warps and resample the mask exactly ONCE,
-    avoiding the compounded nearest-neighbour error of warping it per step (B4).
+    avoiding the compounded nearest-neighbour error of warping it per step.
 
 Out-of-frame samples are filled with the void id in the mask so the metric
 ignores invented labels.

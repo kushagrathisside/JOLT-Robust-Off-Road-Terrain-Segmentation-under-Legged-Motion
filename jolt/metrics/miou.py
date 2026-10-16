@@ -1,4 +1,4 @@
-"""Streaming confusion-matrix mIoU (JOLT §5.2).
+"""Streaming confusion-matrix mIoU (RESEARCH §5.2).
 
 We accumulate a global KxK confusion matrix over the whole split and compute IoU
 once at the end. This is the statistically correct dataset-level mIoU; it is NOT
