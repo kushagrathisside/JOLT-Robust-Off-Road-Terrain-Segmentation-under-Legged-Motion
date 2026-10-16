@@ -37,15 +37,71 @@ ImageNet-C [4].
   that state-of-the-art segmentation degrades.
 
 **Scope of the novelty claim.** Corruption-robustness benchmarks for segmentation
-already exist, and motion-blur-robust segmentation has been studied on road scenes. The
-defensible claim is the combination: off-road or legged-platform scenes × gait-matched
-parameters × a retention metric. See `docs/literature-justification.tex`, section
-"Threats to novelty", for the detailed positioning.
+exist (Kamann & Rother [11]), and a published method already synthesizes motion blur
+from segmentation labels for road scenes (CCMBA [12]). What survives the check in §2.1
+is narrower: a gait-matched, retention-based benchmark for outdoor scenes under legged
+corruption. See `docs/literature-justification.tex`, section "Threats to novelty", for
+the detailed positioning.
 
-An earlier draft said that no work addresses legged ego-motion. The check in §11 did
-not support that: TAIL is a SLAM dataset and Verti-Bench is a simulation mobility
-benchmark, and neither was confirmed to treat blur or rolling shutter as a nuisance.
-Do not use that claim without a proper literature search.
+An earlier draft said that no work addresses legged ego-motion. That was wrong: legged
+gait blur has been studied for feature detection (2019) and for occupancy prediction
+(2025–26). Its examples were also wrong. TAIL is a SLAM dataset and Verti-Bench is a
+simulation mobility benchmark, and neither was confirmed to treat blur or rolling
+shutter as a nuisance.
+
+If the gate fails, the contribution narrows to cross-dataset generalization (§7) and an
+honest negative result. Do not force C2.
+
+### 2.1 Literature check (2026-10-16)
+
+A small review, done with web search. It used abstracts and search snippets, not full
+texts, so it is not a systematic review. Numbers in brackets refer to §11.
+
+- **Segmentation under corruption.** Kamann & Rother [11] corrupted about 400,000 images
+  from Cityscapes, PASCAL VOC and ADE20K. Networks largely tolerate optical (PSF) blur,
+  and blur hurts small, distant objects most. The search did **not** confirm that the
+  benchmark includes *motion* blur. The literature doc says it does, so check the PDF.
+- **Motion blur for segmentation (on road).** CCMBA [12] (CVPR 2023) builds
+  class-centric motion blur from segmentation labels. It covers camera ego-motion blur
+  and dynamic-object blur, is evaluated on VOC and Cityscapes, and has released code.
+  This is the closest prior art to C1's motion-blur part.
+- **Foundation models under blur.** For SAM, the two studies disagree. One finds blur,
+  including motion blur, is a weak spot for small objects [13]. The other finds SAM
+  tolerates most blur types, with zoom blur as the exception [14]. Both test the original
+  SAM, not SAM2. For DINOv2, feature-level studies find that mild blur changes features
+  little, and larger blur changes them much more [15]. The ECCV 2024 BRAVO challenge was
+  won with DINOv2 and a simple decoder on out-of-distribution urban scenes [16]. No
+  segmentation-under-blur study of DINOv2 was found.
+- **Off-road segmentation.** No 2025 off-road blur or corruption benchmark was found.
+  COARSE [17] (IROS 2025) trains on coarse real labels plus densely labelled
+  out-of-domain data. It reports gains of 9.7% on RUGD and 8.4% on RELLIS-3D over
+  coarse-only training. That supports the coarse-label premise.
+- **Legged-robot blur and jitter.** Gültekin & Saranlı [18] (2019) benchmark deblurring
+  for legged-robot vision, using a feature-detection metric. PanoMMOcc [19] (2026) and
+  OneOcc [20] (2025) study gait-induced vertical jitter and blur in panoramic occupancy
+  prediction, and PanoMMOcc adds a jitter-compensation module. No segmentation-robustness
+  benchmark under legged corruption was found.
+- **IMU-aided deblurring.** Gyroscope-aided deblurring exists [21, 22]. One 2024 method
+  derives blur paths from IMU data to make training pairs.
+- **Rolling shutter.** No segmentation study was found. A 2026 UF paper handles monocular
+  depth under strong rolling-shutter distortion from ego-motion and reports a test on a
+  legged robot [23]. It is about depth, not segmentation.
+- **Gait frequency (optional sweep).** For a compliant quadruped, the best forward trot
+  was at 3.5 Hz locomotion frequency, with centre-of-mass height changing by ±5 mm and
+  pitch by 0.06 ± 0.04 rad [24]. A horse-like quadruped study reports a speed-optimal trot
+  near 4 Hz and walk near 3.4 Hz [25], per the search snippet. These are quadruped
+  locomotion frequencies, not humanoid body-oscillation frequencies. No humanoid source
+  was found.
+
+**Implications for the plan.**
+1. The motion-blur part of C1 is not novel and must cite CCMBA [12].
+2. The novelty claim should be a gait-matched, retention-based, outdoor-scene benchmark.
+   The whitespace is narrower than the earlier draft said.
+3. The gate prior is unclear. For DINOv2, low severities may come out flat. For SAM2,
+   the literature gives no prediction.
+4. The IMU-conditioned method idea (§6) and jitter compensation for legged perception
+   already exist. The novelty would have to come from coupling them to segmentation
+   robustness on outdoor scenes.
 
 If the gate fails, the contribution narrows to cross-dataset generalization (§7) and an
 honest negative result. Do not force C2.
@@ -83,6 +139,10 @@ mean retention at the highest severity is ≤ 0.85 and monotone, BORDERLINE if �
 otherwise FAIL. These cut-offs are heuristics. They are not derived here or validated.
 Read the per-corruption curves and the seed spread before deciding.
 
+Prior from the literature (§2.1): DINOv2 may stay flat at low severities, because mild
+blur changes its features little. The verdict's "monotone" check should be read with that
+in mind. SAM2 has no clear prediction, and the original-SAM studies disagree.
+
 > Build nothing else until the gate passes. It is the cheapest decisive experiment in
 > the plan.
 
@@ -103,7 +163,8 @@ against real legged IMU and gait data when available. The values live in
 
 Gait link: severity ≈ faster gait / longer exposure / rougher terrain. Document the
 mapping. If IMU traces are available, fit the kernel length to measured angular
-velocity × exposure time.
+velocity × exposure time. The gait-frequency sources found so far are for quadrupeds
+(§2.1 [24, 25]). The optional humanoid sweep needs a humanoid source.
 
 ### 5.2 Metrics (robust to noisy ground truth)
 
@@ -153,8 +214,9 @@ Pick a method after inspecting failure modes:
 
 - **IMU- or proprioception-conditioned deblurring or stabilization.** Legged robots
   have rich ego-motion signals that could predict the blur. Gyroscope- and IMU-aided
-  deblurring already exist for general cameras (see the literature doc), so the
-  novelty would be coupling them to segmentation robustness.
+  deblurring already exist for general cameras [21, 22], and jitter compensation for
+  legged panoramic perception exists [19]. The novelty would be coupling them to
+  segmentation robustness on outdoor scenes.
 - **Temporal fusion or test-time augmentation** across adjacent frames.
 - **Corruption-aware fine-tuning or distillation.** Train the student under the
   parameterized corruptions, and keep a frozen foundation backbone with a small
@@ -197,7 +259,8 @@ The commands are in the top-level [`README.md`](../README.md) and in
 ## 11. References
 
 "Checked" means the title, authors and venue or arXiv ID were confirmed by a web search
-on the date of the commit that added this file. Full PDFs were not read.
+on the date of the commit that added this file. Full PDFs were not read. Items 11–27
+were added on 2026-10-16 from search snippets and abstracts only.
 
 1. N. Wigness, S. Eum, J. G. Rogers, D. Han, H. Kwon. *A RUGD Dataset for Autonomous
    Navigation and Visual Perception in Unstructured Outdoor Environments.* IROS 2019.
@@ -228,6 +291,48 @@ on the date of the commit that added this file. Full PDFs were not read.
     Vertically Challenging Terrain.* arXiv:2502.11426 (RSS 2025). A simulation mobility
     benchmark. Whether it treats blur or rolling shutter as a nuisance was **not
     confirmed**. *(checked; existence only)*
+
+11. A. Kamann, C. Rother. *Benchmarking the Robustness of Semantic Segmentation Models
+    with Respect to Common Corruptions.* International Journal of Computer Vision 129
+    (2021), 462–483. DOI 10.1007/s11263-020-01383-2. *(snippet; motion-blur coverage not
+    confirmed)*
+12. Aakanksha, A. N. Rajagopalan. *Improving Robustness of Semantic Segmentation to
+    Motion-Blur Using Class-Centric Augmentation.* CVPR 2023, pp. 10470–10479. Code:
+    https://github.com/aka-discover/CCMBA_CVPR23 *(snippet)*
+13. *On the Robustness of Segment Anything.* arXiv:2305.16220 (original SAM; blur named as
+    a weakness). *(snippet)*
+14. Qiao et al. *Robustness of SAM: Segment Anything Under Corruptions and Beyond.*
+    arXiv:2306.07713 (original SAM). *(snippet)*
+15. *Probing Perturbation Invariance in DINOv2: Mechanistic Gaps Between Real and
+    Generated Image Representations.* ICML 2026. https://icml.cc/virtual/2026/79536
+    *(snippet; feature-level, not segmentation)*
+16. *First Place Solution to the ECCV 2024 BRAVO Challenge: Evaluating Robustness of Vision
+    Foundation Models for Semantic Segmentation.* arXiv:2409.17208. *(snippet)*
+17. A. Noca et al. *COARSE: Collaborative Pseudo-Labeling with Coarse Real Labels for
+    Off-Road Semantic Segmentation.* arXiv:2503.03947; IROS 2025. *(snippet)*
+18. Gültekin, Saranlı. *Feature detection performance based benchmarking of motion
+    deblurring methods: applications to vision for legged robots.* Image and Vision
+    Computing 82 (2019), 26–38. *(snippet)*
+19. *Panoramic Multimodal Semantic Occupancy Prediction for Quadruped Robots* (PanoMMOcc,
+    VoxelHound). arXiv:2603.13108 (2026). *(snippet)*
+20. *OneOcc: Semantic Occupancy Prediction for Legged Robots with a Single Panoramic
+    Camera.* arXiv:2511.03571 (2025). *(snippet)*
+21. Mustaniemi et al. *Gyroscope-Aided Motion Deblurring with Deep Networks.* WACV 2019.
+    arXiv:1810.00986. *(snippet)*
+22. Luan et al. *Gyroscope-Assisted Motion Deblurring Network.* arXiv:2402.06854 (2024).
+    *(snippet)*
+23. Rolling-shutter anchor-point method for monocular depth under ego-motion (2026).
+    https://focus.ece.ufl.edu/research/2026/rolling-shutter-anchor-point/paper.pdf
+    Authors not recorded. *(snippet)*
+24. *Oncilla robot: a versatile open-source quadruped research robot with compliant
+    pantograph legs.* arXiv:1803.06259. Authors not recorded. *(snippet)*
+25. Moro et al. (2013). Horse-like motion primitives applied to a compliant quadruped.
+    https://dlg.is.mpg.de/publications/moro_horse-like_2013. Journal and figures not
+    verified. *(snippet only)*
+26. L. Kong et al. *Robo3D: Towards Robust and Reliable 3D Perception against Corruptions.*
+    ICCV 2023. arXiv:2303.17597. LiDAR, not camera. *(snippet)*
+27. X. Yan et al. *Benchmarking the Robustness of LiDAR Semantic Segmentation Models.*
+    arXiv:2301.00970 (SemanticKITTI-C). LiDAR, not camera. *(snippet)*
 
 Not checked: SegFormer, DeepLabv3, and the other sources in
 `docs/literature-justification.tex`. Check them before citing.
