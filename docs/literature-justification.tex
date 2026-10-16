@@ -48,8 +48,10 @@ The relative-robustness framing is mature and transferable, which de-risks the m
         ground truth cancels.
   \item \textbf{Robustness of semantic segmentation to common corruptions}
         \cite{kamann} is the direct segmentation analogue (Cityscapes / PASCAL VOC /
-        ADE20K), and it \emph{already includes motion blur}. This both validates the
-        approach and is the strongest novelty threat (\S\ref{sec:threats}).
+        ADE20K), and it covers blur corruptions: the paper names PSF blur, and whether it
+        includes \emph{motion} blur could not be confirmed from the abstract or the
+        available snippets. This both validates the approach and is the strongest novelty
+        threat (\S\ref{sec:threats}).
   \item \textbf{Motion-blur-robust segmentation via class-centric augmentation}
         \cite{classcentric} (CVPR 2023) shows motion-blur robustness for segmentation
         is itself an active, partly-owned topic --- but on-road.
@@ -78,8 +80,11 @@ accuracy- or generalization-focused, not corruption-focused) leaves a clear gap:
         \emph{retention} target (where label noise cancels) is the right reframe.
   \item \textbf{Legged ground-level perception is rising but corruption-blind.}
         Recent legged datasets/benchmarks \cite{grandtour,oneocc,robosense} establish
-        the platform's importance yet none stress-test segmentation under synthesized
-        legged-motion corruption.
+        the platform's importance. Legged gait blur has been studied for feature
+        detection \cite{gultekin} and for panoramic occupancy prediction
+        \cite{panommocc,oneocc}, yet none of these stress-test segmentation under
+        synthesized legged-motion corruption. This narrows the whitespace compared with
+        earlier drafts.
 \end{itemize}
 \noindent\textbf{Net:} the defensible novelty is the \emph{off-road $\times$
 legged-gait-matched $\times$ retention-metric} specialization, plus releasing the
@@ -96,7 +101,7 @@ benchmark owns it \emph{for off-road / legged terrain}.'' Specifically:
   \item Do \textbf{not} claim the first motion-blur-robust segmentation ---
         \cite{classcentric} owns it (on-road).
   \item Do \textbf{not} claim the first IMU/proprioception-conditioned deblurring ---
-        gyroscope- and IMU-aided deblurring already exist \cite{gyrodeblur,imumesh},
+        gyroscope- and IMU-aided deblurring already exist \cite{mustaniemi,gyrodeblur,imumesh},
         and explicitly mention legged robots. The novelty would be \emph{coupling it
         to terrain segmentation robustness}, not the deblurring idea itself.
 \end{itemize}
@@ -135,9 +140,10 @@ targeted method beats baselines on retention across multiple off-road datasets.
   ICLR 2019. \url{https://arxiv.org/abs/1903.12261}
 \bibitem{kamann} C. Kamann and C. Rother.
   \emph{Benchmarking the Robustness of Semantic Segmentation Models with Respect to
-  Common Corruptions.} IJCV 2020.
+  Common Corruptions.} IJCV 129 (2021), 462--483.
   \url{https://link.springer.com/article/10.1007/s11263-020-01383-2}
-\bibitem{classcentric} \emph{Improving Robustness of Semantic Segmentation to
+\bibitem{classcentric} Aakanksha and A. N. Rajagopalan.
+  \emph{Improving Robustness of Semantic Segmentation to
   Motion-Blur Using Class-Centric Augmentation.} CVPR 2023.
   \url{https://cvpr.thecvf.com/virtual/2023/poster/21045}
 \bibitem{robo3d} L. Kong et al. \emph{Benchmarking the Robustness of LiDAR Semantic
@@ -173,5 +179,12 @@ targeted method beats baselines on retention across multiple off-road datasets.
   \url{https://arxiv.org/abs/2011.12954}
 \bibitem{goose} \emph{GOOSE Dataset.} \url{https://goose-dataset.de/}
 \bibitem{dinov2} M. Oquab et al. \emph{DINOv2.} \url{https://arxiv.org/abs/2304.07193}
+\bibitem{gultekin} G\"ultekin and Saranl\i. \emph{Feature detection performance based
+  benchmarking of motion deblurring methods: applications to vision for legged robots.}
+  Image and Vision Computing 82 (2019), 26--38. (Author initials not recorded.)
+\bibitem{panommocc} \emph{Panoramic Multimodal Semantic Occupancy Prediction for
+  Quadruped Robots.} arXiv:2603.13108, 2026. \url{https://arxiv.org/abs/2603.13108}
+\bibitem{mustaniemi} Mustaniemi et al. \emph{Gyroscope-Aided Motion Deblurring with Deep
+  Networks.} WACV 2019. arXiv:1810.00986. (Author initials not recorded.)
 \end{thebibliography}
 \end{document}
