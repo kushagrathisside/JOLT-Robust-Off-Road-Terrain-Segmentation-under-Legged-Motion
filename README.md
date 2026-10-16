@@ -11,36 +11,79 @@ are planned, not implemented.
 > penalizes models that are more spatially faithful than the ground truth, and
 > foundation models (DINOv2/SAM2) are near-ceiling on clean accuracy. Robustness is a
 > *relative* quantity (model vs. itself, clean→corrupted), so it is fair even with
-> noisy GT. See [`docs/RESEARCH.md`](docs/RESEARCH.md)
-> for the full plan and [`docs/literature-justification.tex`](docs/literature-justification.tex)
-> for positioning vs. prior work.
+> noisy GT. See [`docs/RESEARCH.md`](docs/RESEARCH.md) for the full plan and
+> [`docs/literature-justification.tex`](docs/literature-justification.tex) for
+> positioning vs. prior work.
 
 ## Status
 
-| Component | State |
-|---|---|
-| **Gate (§4)** — go/no-go diagnostic | ✅ implemented, `jolt/scripts/gate.py` |
-| Corruptions, metrics, RUGD loaders, DINOv2 model, smoke test | ✅ implemented + tested |
-| `benchmark.py` (full sweep), `crossdataset.py` (§7), `baselines.py`, SAM2 wrapper body | ⏳ not yet implemented |
+| Component | State | Next step |
+|---|---|---|
+| Gate (`jolt/scripts/gate.py`, RESEARCH §4) | implemented; not yet run on RUGD | Run on RUGD val ([`running-on-gpu.md`](docs/running-on-gpu.md) §3) |
+| Smoke test (`jolt/scripts/smoke_test.py`) | implemented; needs torch and the RUGD sample | Document where the RUGD sample comes from |
+| Corruptions: motion blur, rolling shutter, jitter, legged composite | implemented | Calibrate severities against IMU or gait data (RESEARCH §5.1) |
+| Metrics: mIoU, retention, mCR, boundary-F | implemented | Add unit tests (none exist yet) |
+| RUGD loaders (`RUGDFrames`, `RUGDRaw`) | implemented | Check `RUGD_SPLITS` against the protocol |
+| DINOv2 frozen head (`jolt/models/dinov2_head.py`) | implemented; loader refuses an untrained head | Supply `best_model.pth` ([`running-on-gpu.md`](docs/running-on-gpu.md) §1) |
+| Head training | no script in the repo; the notebook is on `legacy-notebooks` | Decide whether to document the notebook or add a script |
+| SAM2 wrapper (`sam2_wrapper.py`) | stub; raises `NotImplementedError` | Implement the mask-to-label assignment before use |
+| Baselines (SegFormer, DeepLabv3) | not started | Choose and implement; cite after checking |
+| Benchmark sweep (`scripts/benchmark.py`) | not started | After the gate passes |
+| Cross-dataset (`scripts/crossdataset.py`, RELLIS-3D and GOOSE loaders) | not started | After the gate passes |
+| Fourth degradation | open | Define and justify; the legged composite is a combination, not a fourth |
+| Gait-frequency sweep | optional; not started | Cite the source of each frequency value |
+| Literature | positioning in `docs/literature-justification.tex`; some sources unchecked | Verify each source before citing |
+| Report | not started | Write once results exist |
 
 **The gate is the deciding experiment — run it before building anything downstream.**
 If legged-motion corruption clearly degrades SOTA outdoor segmentation, build the
-benchmark + method; if not, pivot to a cross-dataset generalization study.
+benchmark and method; if not, pivot to a cross-dataset generalization study.
 
 ## Repository layout
 
+Section references (§) in code and docs point to [`docs/RESEARCH.md`](docs/RESEARCH.md).
+
 ```
+.gitignore                        ignored paths: data, runs, checkpoints, caches
+LICENSE                           MIT licence
+README.md                         this file: status, layout, quickstart
+pyproject.toml                    package metadata and dependencies (pip install -e .)
+requirements.txt                  dependency floors and the pip-freeze note
+configs/
+  corruption_severities.yaml      severity ladders (mirrors corruptions/severity.py)
+data/
+  README.md                       where datasets go; RUGD layout; split notes
+docs/
+  RESEARCH.md                     research plan: gate, benchmark spec, method options, references
+  literature-justification.tex    literature positioning and threats to novelty (LaTeX)
+  running-on-gpu.md               GPU setup, head checkpoint source, gate commands
 jolt/
-  corruptions/   motion_blur · rolling_shutter · jitter · geometry · severity · compose
-  data/          rugd.py  (RUGDFrames = full-frame benchmark unit; RUGDRaw = patches for training)
-  metrics/       miou (streaming confusion matrix) · retention (R, mCR) · boundary_f
-  models/        dinov2_head (subject) · sam2_wrapper (ceiling ablation, stub)
-  scripts/       gate.py  ·  smoke_test.py
-  README.md      package-level docs + methodological caveats
-configs/         corruption_severities.yaml
-docs/            literature-justification.tex  ·  running-on-gpu.md
-data/            datasets live here (git-ignored; see data/README.md)
-(legacy Colab notebooks: on the legacy-notebooks branch, not on main)
+  README.md                       package docs and methodological caveats
+  __init__.py                     package marker
+  corruptions/
+    __init__.py                   package marker
+    compose.py                    corruption registry, legged composite, seeded RNG
+    geometry.py                   backward warp maps; composing warps; image and mask resampling
+    jitter.py                     viewpoint jitter (small random rotational homography)
+    motion_blur.py                directional motion blur (photometric; mask unchanged)
+    rolling_shutter.py            row-wise readout shear (geometric)
+    severity.py                   severity ladders 1–5 for each corruption
+  data/
+    __init__.py                   package marker
+    rugd.py                       RUGD loaders (RUGDFrames for the benchmark, RUGDRaw for head training), colour map, splits
+  metrics/
+    __init__.py                   package marker
+    boundary_f.py                 boundary F-score, streamed over a split
+    miou.py                       streaming confusion-matrix mIoU
+    retention.py                  retention R and mCR
+  models/
+    __init__.py                   package marker
+    dinov2_head.py                frozen DINOv2 with a conv head (the subject) and checkpoint loader
+    sam2_wrapper.py               SAM2 ceiling model; stub that raises NotImplementedError
+  scripts/
+    __init__.py                   package marker
+    gate.py                       the gate: clean vs. corrupted retention and advisory verdict
+    smoke_test.py                 offline checks on RUGD sample frames (needs torch)
 ```
 
 ## Quickstart
@@ -48,7 +91,7 @@ data/            datasets live here (git-ignored; see data/README.md)
 ```bash
 pip install -e .          # or: pip install -r requirements.txt
 
-# 1. Offline plumbing check (no GPU / no weights needed):
+# 1. Offline plumbing check (no GPU, no weights; needs torch and the RUGD sample):
 python -m jolt.scripts.smoke_test \
     --images-dir data/rugd_sample/RUGD_sample-data/images \
     --annotations-dir data/rugd_sample/RUGD_sample-data/annotations
