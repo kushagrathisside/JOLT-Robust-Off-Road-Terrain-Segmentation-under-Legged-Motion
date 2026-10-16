@@ -16,7 +16,8 @@ layout works; pass `--use-splits` to filter by the canonical train/val/test
 sequences (see `jolt/data/rugd.py: RUGD_SPLITS`).
 
 The gate/benchmark synthesize corruptions on these **full frames** — do not
-pre-crop. The 224×224 patch zip (`rugd_224_patches.zip`) is for **training the
+pre-crop. The 224×224 patch zip (`rugd_224_patches.zip`, made by
+`RUGD_dataset_augmentation.ipynb` on the `legacy-notebooks` branch) is for **training the
 head only** (`RUGDRaw`), not for the corruption benchmark.
 
 ## Cross-dataset (§7, future)

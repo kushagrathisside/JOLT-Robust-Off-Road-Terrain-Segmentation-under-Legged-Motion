@@ -3,7 +3,7 @@
 We accumulate a global KxK confusion matrix over the whole split and compute IoU
 once at the end. This is the statistically correct dataset-level mIoU; it is NOT
 the same as averaging per-image/per-batch mIoU (which is biased by small unions
-and is what the original exploratory notebook did). Pixels labelled `ignore_index`
+and is what the legacy exploratory notebook did). Pixels labelled `ignore_index`
 (RUGD void = 0, plus geometric out-of-frame fill) are dropped.
 """
 import numpy as np

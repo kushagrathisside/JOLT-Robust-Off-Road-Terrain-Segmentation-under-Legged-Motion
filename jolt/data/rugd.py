@@ -129,7 +129,8 @@ class RUGDRaw:
     """Pre-generated 224x224 patches (for TRAINING the head, not the benchmark).
 
     Yields (image_uint8 HxWx3 RGB, mask HxW int64, name). Masks are already
-    single-channel class ids (produced by the augmentation notebook).
+    single-channel class ids (produced by RUGD_dataset_augmentation.ipynb, on the
+    legacy-notebooks branch).
     """
 
     def __init__(self, root: str, split: str = "val"):

@@ -40,7 +40,7 @@ jolt/
 configs/         corruption_severities.yaml
 docs/            literature-justification.tex  ·  running-on-gpu.md
 data/            datasets live here (git-ignored; see data/README.md)
-legacy/          original exploratory DINOv2/RUGD fine-tuning notebooks
+(legacy Colab notebooks: on the legacy-notebooks branch, not on main)
 ```
 
 ## Quickstart

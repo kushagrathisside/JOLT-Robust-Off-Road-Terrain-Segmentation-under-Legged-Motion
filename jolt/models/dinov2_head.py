@@ -1,7 +1,7 @@
 """DINOv2 frozen-backbone segmenter (JOLT §5.3 — 'your pipeline', the subject).
 
-Mirrors the FrozenBackboneSegmenter from DinoV2_FineTuning_RUGD.ipynb so an
-existing checkpoint loads directly: frozen DINOv2-S/14 patch tokens -> a light
+Mirrors the FrozenBackboneSegmenter in the legacy notebook DinoV2_FineTuning_RUGD.ipynb
+(on the legacy-notebooks branch) so an existing checkpoint loads directly: frozen DINOv2-S/14 patch tokens -> a light
 conv head -> bilinear upsample to input size.
 """
 import torch
