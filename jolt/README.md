@@ -1,8 +1,9 @@
-# JOLT — legged-motion robustness benchmark for off-road terrain segmentation
+# JOLT — legged-motion robustness benchmark for outdoor scene segmentation
 
 A parameterized motion-degradation robustness benchmark (motion blur, rolling
-shutter, viewpoint jitter) for off-road terrain segmentation, plus a gated
+shutter, viewpoint jitter) for outdoor scene segmentation, plus a gated
 robustness method. We measure **retention** under corruption, not clean mIoU.
+The current code evaluates on RUGD, an off-road dataset.
 See [`../terrain-perception-RESEARCH.md`](../terrain-perception-RESEARCH.md) for
 the full plan and [`../docs/literature-justification.tex`](../docs/literature-justification.tex)
 for positioning.
@@ -26,7 +27,7 @@ python -m jolt.scripts.gate \
     --split val --model dinov2 --checkpoint best_model.pth --seeds 3 --limit 300
 ```
 
-## Models (A5)
+## Models
 - **DINOv2 frozen + head (`--model dinov2`)** is the **primary subject** — it is the
   pipeline under study and the one closest to the corruption-robustness literature.
 - **SAM2 (`--model sam2`)** is an **optional ceiling ABLATION**, not the headline.
@@ -46,7 +47,7 @@ inference size and the logits are upsampled back for scoring. Do **not** corrupt
 readout shear, and intrinsics all become meaningless at the crop scale). `RUGDRaw`
 is for **training the head only**.
 
-### Retention cancels label noise only approximately (A2)
+### Retention cancels label noise only approximately
 `R = m(c,s)/m0` is designed so RUGD's coarse ground truth largely cancels in the
 clean→corrupt ratio. Two honest caveats to state in any write-up:
 1. **mIoU is nonlinear**, so the cancellation is approximate, not exact.

@@ -1,10 +1,11 @@
-# JOLT — Robust Off-Road Terrain Segmentation under Legged Motion
+# JOLT — Robust Outdoor Segmentation under Legged Motion
 
-A **parameterized motion-degradation robustness benchmark** for off-road terrain
+A **parameterized motion-degradation robustness benchmark** for outdoor scene
 segmentation — motion blur, rolling shutter, and viewpoint jitter induced by legged
 ego-motion — plus a gated robustness method. We deliberately do **not** chase clean
 mIoU; we measure **retention** under corruption, where coarse-label noise largely
-cancels.
+cancels. The current code evaluates on RUGD, an off-road dataset; RELLIS-3D and GOOSE
+are planned, not implemented.
 
 > **Why robustness, not accuracy?** Off-road labels (RUGD) are coarse, so clean mIoU
 > penalizes models that are more spatially faithful than the ground truth, and
@@ -23,7 +24,7 @@ cancels.
 | `benchmark.py` (full sweep), `crossdataset.py` (§7), `baselines.py`, SAM2 wrapper body | ⏳ not yet implemented |
 
 **The gate is the deciding experiment — run it before building anything downstream.**
-If legged-motion corruption clearly degrades SOTA terrain segmentation, build the
+If legged-motion corruption clearly degrades SOTA outdoor segmentation, build the
 benchmark + method; if not, pivot to a cross-dataset generalization study.
 
 ## Repository layout

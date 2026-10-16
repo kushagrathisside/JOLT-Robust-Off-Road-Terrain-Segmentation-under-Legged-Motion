@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "jolt"
 version = "0.1.0"
-description = "JOLT — legged-motion robustness benchmark for off-road terrain segmentation"
+description = "JOLT — legged-motion robustness benchmark for outdoor scene segmentation"
 authors = [{ name = "Kushagra Srivastava" }]
 license = { file = "LICENSE" }
 readme = "jolt/README.md"
